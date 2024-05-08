@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Max Haney | Projects</title>
+    <link rel="stylesheet" href="./assets/styles.css">
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Jetbrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    <!-- Github Calendar -->
+    <script src="./assets/github-calendar.min.js"></script>
+    <link rel="stylesheet" href="./assets/github-calendar-responsive.css"/>
+    <!-- Loading fade-in transition -->
+    <script src="./assets/fade-in.js"></script>
+</head>
+<body>
+    <div id="fade-in">
+        <header>
+            <h1>Max Haney</h1>
+            <h3>mchaney-dev.github.io</h3>
+        </header>
+        
+        <nav>
+            <a href="index.html">About</a>
+            <a href="./projects.html" class="active">Projects</a>
+            <a href="./contact.html">Contact</a>
+        </nav>
+        
+        <main>
+            <div class="content-frame">
+                <div class="text-wrap">
+                    <h2>Projects</h2>
+                </div>
+                <div class="calendar">
+                    <!-- Loading message -->
+                    Loading data from Github... :]
+                </div>
+                <script>
+                    GitHubCalendar(".calendar", "mchaney-dev", {global_stats: false, responsive: true});
+                </script>
+                <hr class="divider">
+                <div>
+                    <h3>Frontend and Web Design</h3>
+                    <p>
+                        <ul>
+                            <li><a href="https://github.com/mchaney-dev/mchaney-dev.github.io">mchaney-dev.github.io</a> - This site.</li>
+                        </ul>
+                    </p>
+                    <h3>Game Development</h3>
+                    <p>
+                        <ul>
+                            <li><i>Coming soon :]</i></li>
+                        </ul>
+                    </p>
+                    <h3>Miscellaneous</h3>
+                    <p>
+                        <ul>
+                            <li><a href="https://github.com/mchaney-dev/andromeda">Andromeda</a> - Easy longform text generation.</li>
+                            <li><a href="https://github.com/mchaney-dev/cu-rooms">CU Rooms</a> - Aggregated room availability data for Clemson University.</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
