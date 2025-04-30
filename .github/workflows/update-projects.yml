@@ -9,6 +9,9 @@ jobs:
   update-projects:
     runs-on: ubuntu-latest
 
+    env:
+      BRANCH_NAME: auto/update-projects-${{ github.run_id }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -31,35 +34,45 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
 
-      - name: Create a new branch with changes
+      - name: Create branch and commit if changes exist
+        id: commit
         run: |
-          BRANCH_NAME="auto/update-projects-$(date +'%Y%m%d')"
           git checkout -b $BRANCH_NAME
           git add projects.html
-          git diff --cached || echo "No changes detected"
-          git commit -m "Auto-update projects list"
-          git push origin $BRANCH_NAME
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            git commit -m "Auto-update projects list"
+            git push origin $BRANCH_NAME
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create Pull Request
+        if: steps.commit.outputs.changes == 'true'
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: .
           commit-message: "Update project list"
-          branch: $BRANCH_NAME
+          branch: ${{ env.BRANCH_NAME }}
           base: "main"
 
       - name: Install GitHub CLI
+        if: steps.commit.outputs.changes == 'true'
         run: |
           curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /usr/share/keyrings/githubcli-archive-keyring.gpg > /dev/null
           sudo apt update
-          sudo apt install gh
+          sudo apt install -y gh
 
       - name: Attempt to auto-merge
+        if: steps.commit.outputs.changes == 'true'
         run: |
-          PR_URL=$(gh pr list --state=open --head $(git rev-parse --abbrev-ref HEAD) --json url -q '.[0].url')
-          gh pr merge $PR_URL --merge --auto
+          PR_URL=$(gh pr list --state=open --head $BRANCH_NAME --json url -q '.[0].url')
+          if [ -n "$PR_URL" ]; then
+            gh pr merge "$PR_URL" --merge --auto
+          else
+            echo "No open PR found to merge."
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
