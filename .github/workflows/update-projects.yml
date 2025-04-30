@@ -2,32 +2,59 @@ name: Update Projects List
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *' 
   workflow_dispatch:
 
 jobs:
   update-projects:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
-      - name: Fetch latest repos and update file
+      - name: Install dependencies and run script
         run: |
           pip install requests
           python scripts/update_projects.py
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USERNAME: mchaney-dev
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit and push changes
+      - name: Create a new branch with changes
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "Auto-update projects list" || echo "No changes"
-          git push
+          BRANCH_NAME="auto/update-projects-$(date +'%Y%m%d')"
+          git checkout -b $BRANCH_NAME
+          git add projects.html
+          git commit -m "Auto-update projects list"
+          git push origin $BRANCH_NAME
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Update Projects List"
+          body: "Updates projects.html"
+          head: ${{ github.head_ref }}
+          base: main
+          labels: "auto-update"
+
+      - name: Install GitHub CLI
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /usr/share/keyrings/githubcli-archive-keyring.gpg > /dev/null
+          sudo apt update
+          sudo apt install gh
+
+      - name: Attempt to auto-merge
+        run: |
+          PR_URL=$(gh pr list --state=open --head $(git rev-parse --abbrev-ref HEAD) --json url -q '.[0].url')
+          gh pr merge $PR_URL --merge --auto
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
