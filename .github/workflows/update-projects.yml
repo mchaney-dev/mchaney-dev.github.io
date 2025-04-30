@@ -34,22 +34,27 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
 
-      - name: Create branch and commit if changes exist
+      - name: Check for changes in projects.html
+        id: check_changes
+        run: |
+          git diff --quiet projects.html || echo "Changes detected"
+          
+      - name: Create and push a new branch if changes exist
         id: commit
         run: |
-          if git diff --quiet projects.html; then
-            echo "No changes to commit"
-            echo "changes=false" >> $GITHUB_OUTPUT
-          else
+          if [ -n "$(git diff --name-only projects.html)" ]; then
+            echo "Changes detected in projects.html"
             git checkout -b "$BRANCH_NAME"
             git add projects.html
             git commit -m "Auto-update projects list"
             git push origin "$BRANCH_NAME"
-            echo "changes=true" >> $GITHUB_OUTPUT
-          fi
+            echo "branch_created=true" >> $GITHUB_ENV
+          else
+            echo "No changes to commit"
+            echo "branch_created=false" >> $GITHUB_ENV
 
       - name: Create Pull Request
-        if: steps.commit.outputs.changes == 'true'
+        if: env.branch_created == 'true'
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -58,14 +63,14 @@ jobs:
           base: "main"
 
       - name: Install GitHub CLI
-        if: steps.commit.outputs.changes == 'true'
+        if: env.branch_created == 'true'
         run: |
           curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /usr/share/keyrings/githubcli-archive-keyring.gpg > /dev/null
           sudo apt update
           sudo apt install -y gh
 
       - name: Attempt to auto-merge
-        if: steps.commit.outputs.changes == 'true'
+        if: env.branch_created == 'true'
         run: |
           PR_URL=$(gh pr list --state=open --head "$BRANCH_NAME" --json url -q '.[0].url')
           if [ -n "$PR_URL" ]; then
