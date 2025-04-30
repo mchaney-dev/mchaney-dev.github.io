@@ -46,11 +46,10 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Update Projects List"
-          body: "Updates projects.html"
-          head: ${{ github.ref_name }}
-          base: main
-          labels: "auto-update"
+          path: .
+          commit-message: "Update project list"
+          branch: "create-pull-request/patch"
+          base: "main"
 
       - name: Install GitHub CLI
         run: |
