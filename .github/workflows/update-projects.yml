@@ -64,6 +64,8 @@ jobs:
           branch: ${{ env.BRANCH_NAME }}
           base: "main"
           delete-branch: false
+          title: "Update projects list"
+          body: "Automatically updates the projects list"
 
       - name: Install GitHub CLI
         if: env.branch_created == 'true'
