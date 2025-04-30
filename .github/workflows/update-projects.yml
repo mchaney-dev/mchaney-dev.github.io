@@ -2,7 +2,7 @@ name: Update Projects List
 
 on:
   schedule:
-    - cron: '0 0 * * *' 
+    - cron: '0 0 * * *'  # Runs daily at midnight UTC
   workflow_dispatch:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: '3.x'
 
-    - name: Install dependencies and run script
+      - name: Install dependencies and run script
         run: |
           pip install requests
           python scripts/update_projects.py
