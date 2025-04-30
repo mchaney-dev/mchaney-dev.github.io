@@ -38,15 +38,16 @@ jobs:
         id: check_changes
         run: |
           git diff --quiet projects.html || echo "Changes detected"
-          
+
       - name: Create and push a new branch if changes exist
         id: commit
         run: |
-          git status  # Added for clarity
+          git status  # Check the status before committing
           if [ -n "$(git diff --name-only projects.html)" ]; then
             echo "Changes detected in projects.html"
             git checkout -b "$BRANCH_NAME"
             git add projects.html
+            git status  # Confirm the file is staged
             git commit -m "Auto-update projects list"
             git push origin "$BRANCH_NAME"
             echo "branch_created=true" >> $GITHUB_ENV
