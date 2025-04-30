@@ -9,9 +9,6 @@ jobs:
   update-projects:
     runs-on: ubuntu-latest
 
-    env:
-      BRANCH_NAME: auto/update-projects-${{ github.run_id }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -29,60 +26,14 @@ jobs:
           GITHUB_USERNAME: mchaney-dev
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set Git identity
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-
-      - name: Check for changes in projects.html
-        id: check_changes
-        run: |
-          git diff --quiet projects.html || echo "Changes detected"
-
-      - name: Create and push a new branch if changes exist
-        id: commit
-        run: |
-          git status  # Check the status before committing
-          if [ -n "$(git diff --name-only projects.html)" ]; then
-            echo "Changes detected in projects.html"
-            git checkout -b "$BRANCH_NAME"
-            git add projects.html
-            git status  # Confirm the file is staged
-            git commit -m "Auto-update projects list"
-            git push origin "$BRANCH_NAME"
-            echo "branch_created=true" >> $GITHUB_ENV
-          else
-            echo "No changes to commit"
-            echo "branch_created=false" >> $GITHUB_ENV
-          fi
-
       - name: Create Pull Request
-        if: env.branch_created == 'true'
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Update project list"
-          branch: ${{ env.BRANCH_NAME }}
-          base: "main"
-          delete-branch: false
+          commit-message: "Auto-update projects list"
+          branch: auto/update-projects
           title: "Update projects list"
           body: "Automatically updates the projects list"
-
-      - name: Install GitHub CLI
-        if: env.branch_created == 'true'
-        run: |
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /usr/share/keyrings/githubcli-archive-keyring.gpg > /dev/null
-          sudo apt update
-          sudo apt install -y gh
-
-      - name: Attempt to auto-merge
-        if: env.branch_created == 'true'
-        run: |
-          PR_URL=$(gh pr list --state=open --head "$BRANCH_NAME" --json url -q '.[0].url')
-          if [ -n "$PR_URL" ]; then
-            gh pr merge "$PR_URL" --merge --auto
-          else
-            echo "No open PR found to merge."
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          base: main
+          delete-branch: false
+          path: projects.html
