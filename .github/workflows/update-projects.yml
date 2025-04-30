@@ -37,15 +37,14 @@ jobs:
       - name: Create branch and commit if changes exist
         id: commit
         run: |
-          git checkout -b $BRANCH_NAME
-          git add projects.html
-
-          if git diff --cached --quiet; then
+          if git diff --quiet projects.html; then
             echo "No changes to commit"
             echo "changes=false" >> $GITHUB_OUTPUT
           else
+            git checkout -b "$BRANCH_NAME"
+            git add projects.html
             git commit -m "Auto-update projects list"
-            git push origin $BRANCH_NAME
+            git push origin "$BRANCH_NAME"
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
@@ -68,7 +67,7 @@ jobs:
       - name: Attempt to auto-merge
         if: steps.commit.outputs.changes == 'true'
         run: |
-          PR_URL=$(gh pr list --state=open --head $BRANCH_NAME --json url -q '.[0].url')
+          PR_URL=$(gh pr list --state=open --head "$BRANCH_NAME" --json url -q '.[0].url')
           if [ -n "$PR_URL" ]; then
             gh pr merge "$PR_URL" --merge --auto
           else
