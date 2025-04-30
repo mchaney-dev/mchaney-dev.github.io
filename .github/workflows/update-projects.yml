@@ -48,7 +48,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: .
           commit-message: "Update project list"
-          branch: "auto/update-projects-$(date +'%Y%m%d')"
+          branch: $BRANCH_NAME
           base: "main"
 
       - name: Install GitHub CLI
