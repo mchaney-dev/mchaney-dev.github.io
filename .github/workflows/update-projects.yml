@@ -2,7 +2,7 @@ name: Update Projects List
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs daily at midnight UTC
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -36,6 +36,7 @@ jobs:
           BRANCH_NAME="auto/update-projects-$(date +'%Y%m%d')"
           git checkout -b $BRANCH_NAME
           git add projects.html
+          git diff --cached || echo "No changes detected"
           git commit -m "Auto-update projects list"
           git push origin $BRANCH_NAME
         env:
@@ -47,7 +48,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           title: "Update Projects List"
           body: "Updates projects.html"
-          head: ${{ github.head_ref }}
+          head: ${{ github.ref_name }}
           base: main
           labels: "auto-update"
 
