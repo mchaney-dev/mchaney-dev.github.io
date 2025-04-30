@@ -26,7 +26,22 @@ jobs:
           GITHUB_USERNAME: mchaney-dev
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet projects.html; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GH_PAT }}
@@ -36,3 +51,21 @@ jobs:
           body: "Automatically updates the projects list"
           base: main
           delete-branch: true
+
+      - name: Install GitHub CLI
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          sudo apt update
+          sudo apt install -y gh
+
+      - name: Auto-merge PR
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
+          PR_URL=$(gh pr list --state=open --head auto/update-projects --json url -q '.[0].url')
+          if [ -n "$PR_URL" ]; then
+            echo "Auto-merging PR: $PR_URL"
+            gh pr merge "$PR_URL" --merge --auto
+          else
+            echo "No open PR found."
+          fi
