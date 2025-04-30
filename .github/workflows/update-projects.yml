@@ -48,7 +48,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: .
           commit-message: "Update project list"
-          branch: "create-pull-request/patch"
+          branch: "auto/update-projects-$(date +'%Y%m%d')"
           base: "main"
 
       - name: Install GitHub CLI
