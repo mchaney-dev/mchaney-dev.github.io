@@ -33,8 +33,8 @@ with open("projects.html", "r") as f:
 
 # replace content between comment markers
 new_content = re.sub(
-    r'<!-- START GENERATING PROJECTS -->.*?<!-- END GENERATING PROJECTS -->',
-    f'<!-- START GENERATING PROJECTS -->\n{generated_html_str}\n<!-- END GENERATING PROJECTS -->',
+    r'<!-- START GENERATED PROJECTS -->.*?<!-- END GENERATED PROJECTS -->',
+    f'<!-- START GENERATED PROJECTS -->\n{generated_html_str}\n<!-- END GENERATED PROJECTS -->',
     content,
     flags=re.DOTALL
 )
