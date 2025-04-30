@@ -69,3 +69,15 @@ jobs:
           else
             echo "No open PR found."
           fi
+          
+      - name: Delete branch after merge
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
+          PR_MERGED=$(gh pr view auto/update-projects --json merged -q .merged)
+          if [ "$PR_MERGED" = "true" ]; then
+            echo "PR merged. Deleting branch auto/update-projects."
+            git push origin --delete auto/update-projects
+          else
+            echo "PR not yet merged. Skipping branch deletion."
+          fi
